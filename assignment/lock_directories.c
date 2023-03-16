@@ -14,7 +14,7 @@ void lock_directories() {
     {
         //child process
 	    chmod("upload", 0744);
-        chmod("repor", 0744);
+        chmod("report", 0744);
     }
     else if (pid > 0)
     {

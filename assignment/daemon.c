@@ -106,7 +106,7 @@ int main()
 		double seconds_to_files_check = difftime(now,mktime(&check_uploads_time));
 		//syslog(LOG_INFO, "%.f seconds until check for xml uploads", seconds_to_files_check);
 		if(seconds_to_files_check == 0) {
-			check_file_uploads();
+			check_file_uploads(now);
 
 			//change to tommorow's day
 			update_timer(&check_uploads_time);

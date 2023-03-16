@@ -26,3 +26,6 @@ lock_directories.o : lock_directories.c
 clean:
 	rm daemonprog $(objects)
 
+run:
+	./daemonprog
+

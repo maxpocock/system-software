@@ -8,7 +8,7 @@
 
 #define MAXLENGTH 30
 
-int check_file_uploads(void) {
+int check_file_uploads(time_t current) {
 
     FILE *fp;
     int status;
@@ -38,15 +38,26 @@ int check_file_uploads(void) {
     fgets(path4, MAXLENGTH, fp);
 
     //loops to compare expected results vs actual results
+    chdir("/");
+    fp = fopen("/workspaces/system-software/assignment/logs/missingUploads.txt", "w+");
     for(int x=0; x<sizeof(d); x++){
         if(path1[x]== d[x]){
             dcount++;
         }
     };
     if(dcount == sizeof(d) - 1){
-        results[0] = 1;
+
     } else {
-        results[0] = 0;
+        char message[] = "";
+        char ptr [50];
+        int len = (strlen(d)+1) + (strlen(message)+1);
+
+        int size = 1;
+   
+        // Opening file for reading and writing
+        fwrite(d, len, 1, fp);
+        
+        fwrite(current, strlen(current), 1, fp);
     }
 
     for(int x=0; x<sizeof(m); x++){
