@@ -5,5 +5,7 @@
 #include <syslog.h>
 
 void collect_reports(void) {
-    printf("collect reports functionality could go here.. fork/cp will probably be used");
+        char *argv[] = { "cp ./upload", "./reporting", NULL };
+
+    execv(argv[0], argv[1]);
 }

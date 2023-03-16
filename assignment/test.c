@@ -1,40 +1,38 @@
-#include <unistd.h>
-#include <syslog.h>
 #include <stdio.h>
 #include <string.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <unistd.h>
 
 #define MAXLENGTH 30
 
-int check_file_uploads(void) {
-
+int main(){    
     FILE *fp;
     int status;
     char path1[MAXLENGTH], path2[MAXLENGTH], path3[MAXLENGTH], path4[MAXLENGTH];
     int results[4];
 
     //storing expected files
-    char w[] = "warehouse.xml";
-    char m[] = "manufacturing.xml";
-    char s[] = "sales.xml";
-    char d[] = "distribution.xml";
+    char w[] = "warehouse.txt";
+    char m[] = "manufacturing.txt";
+    char s[] = "sales.txt";
+    char d[] = "distribution.txt";
 
     //initializing counts
     int wcount = 0, mcount = 0, scount = 0, dcount = 0;
 
     //storing results in local variables
-    fp = popen("ls upload | grep distribution", "r");
+    fp = popen("ls report | grep distribution", "r");
     fgets(path1, MAXLENGTH, fp);
 
-    fp = popen("ls upload | grep manufacturing", "r");
+    fp = popen("ls report | grep manufacturing", "r");
     fgets(path2, MAXLENGTH, fp);
 
-    fp = popen("ls upload | grep sales", "r");
+    fp = popen("ls report | grep sales", "r");
     fgets(path3, MAXLENGTH, fp);
 
-    fp = popen("ls upload | grep warehouse", "r");
+    fp = popen("ls report | grep warehouse", "r");
     fgets(path4, MAXLENGTH, fp);
 
     //loops to compare expected results vs actual results
@@ -82,9 +80,8 @@ int check_file_uploads(void) {
     } else {
         results[3] = 0;
     }
-    
-    //returns array of results
-    return results;
-}
 
-      
+    printf("%d, %d, %d, %d \n", results[0], results[1], results[2], results[3]);
+    //returns array of results
+    return 0;
+}

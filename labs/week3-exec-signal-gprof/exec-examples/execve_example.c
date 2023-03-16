@@ -3,7 +3,7 @@
 
 int main(void)
 {
-    char *argv[] = { "/bin/sh", "-c", "env", 0 };
+    char *argv[] = { "./bin/sh", "-c", "env", 0 };
     char *envp[] =
     {
         "HOME=/",

@@ -7,6 +7,24 @@
 #include <syslog.h>
 
 void unlock_directories() {
-    printf("unlock directory functionality should go here. fork/chmod will be used here to change permissions");
+    pid_t pid = fork();
+
+    if (pid == 0)
+    {
+        //child process
+	    chmod("upload", 0766);
+        chmod("reporting", 0744);
+    }
+    else if (pid > 0)
+    {
+        //parent process
+    }
+    else
+    {
+        printf("Something went wrong!!");
+        return;
+    }
+
+    return;
 }
         
