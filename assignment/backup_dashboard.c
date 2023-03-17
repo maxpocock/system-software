@@ -7,5 +7,11 @@
 #include <stdlib.h>
 
 void backup_dashboard(void) {
-    printf("backup code should go here..");
+    chdir("/");
+    chdir("/workspaces/system-software/assignment/");
+    //clear backup folder
+    execl("/backup", "rm", NULL);
+    //copy everything from report directory to backup directory
+    system("cp -a report/. /workspaces/system-software/assignment/backup/");
+    return 0;
 }

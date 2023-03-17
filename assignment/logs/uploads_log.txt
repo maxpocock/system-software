@@ -1,0 +1,8 @@
+distribution.xml
+-- created on 140732291991488 
+manufacturing.xml
+-- created on 140732291991488 
+sales.xml
+-- created on 140732291991488 
+warehouse.xml
+-- created on 140732291991488 

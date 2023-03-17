@@ -7,11 +7,10 @@ int main(void)
     char *envp[] =
     {
         "HOME=/",
-        "PATH=/bin:/usr/bin",
+        "PATH=//workspaces/system-software/labs/week3-exec-signal-gprof/exec-examples",
         "TZ=UTC0",
         "USER=jmccarthy",
-        "LOGNAME=logfile",
-        0
+        "LOGNAME=logfile.txt",
     };
     execvpe(argv[0], &argv[0], envp);
     fprintf(stderr, "Error.....!\n");

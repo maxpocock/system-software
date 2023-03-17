@@ -13,8 +13,13 @@ void lock_directories() {
     if (pid == 0)
     {
         //child process
-	    chmod("upload", 0744);
-        chmod("report", 0744);
+        //navigate to root directory
+        chdir("/");
+        //navigate to assignment directory
+        chdir("/workspaces/system-software/assignment");
+        //call chmod to change directory permissions so data cannot be read or written by users or groups
+        system("chmod 700 upload");
+        system("chmod 700 report");
     }
     else if (pid > 0)
     {

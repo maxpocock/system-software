@@ -3,8 +3,7 @@
  * At 11:30 pm , there will be a check for the xml files that have been uploaded or 
  * files that have not been upladed
  *
- * At 1:00 am, the xml reports will be backed up from xml_upload_directory to 
- * dashboard_directory
+ * At 1:00 am, the xml reports will be moved from upload to report
  *
  * Directories are locked during transfer / backup
  * 
@@ -106,7 +105,7 @@ int main()
 		double seconds_to_files_check = difftime(now,mktime(&check_uploads_time));
 		//syslog(LOG_INFO, "%.f seconds until check for xml uploads", seconds_to_files_check);
 		if(seconds_to_files_check == 0) {
-			check_file_uploads(now);
+			check_file_uploads();
 
 			//change to tommorow's day
 			update_timer(&check_uploads_time);

@@ -1,3 +1,7 @@
+/*  This program is responsible for checking that all expected files have been submitted,
+    and logs those that have not been submitted in missingUploads.txt
+*/
+
 #include <unistd.h>
 #include <syslog.h>
 #include <stdio.h>
@@ -5,17 +9,25 @@
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <time.h>
 
 #define MAXLENGTH 30
 
-int check_file_uploads(time_t current) {
+void writeToMissingUploads(char department[MAXLENGTH], char* time, FILE * fp);
+
+int check_file_uploads() {
 
     FILE *fp;
-    int status;
-    char path1[MAXLENGTH], path2[MAXLENGTH], path3[MAXLENGTH], path4[MAXLENGTH];
-    int results[4];
+    time_t current = time(NULL);
 
-    //storing expected files
+    //converts current time into form that can be written to file
+    char * time_str = ctime(&current);
+    time_str[strlen(time_str)-1] = '\0';
+
+    //path char arrays to store search results
+    char path1[MAXLENGTH], path2[MAXLENGTH], path3[MAXLENGTH], path4[MAXLENGTH];
+    
+    //storing expected file names
     char w[] = "warehouse.xml";
     char m[] = "manufacturing.xml";
     char s[] = "sales.xml";
@@ -39,25 +51,16 @@ int check_file_uploads(time_t current) {
 
     //loops to compare expected results vs actual results
     chdir("/");
-    fp = fopen("/workspaces/system-software/assignment/logs/missingUploads.txt", "w+");
+    fp = fopen("/workspaces/system-software/assignment/logs/missingUploads.txt", "a+");
     for(int x=0; x<sizeof(d); x++){
         if(path1[x]== d[x]){
             dcount++;
         }
     };
-    if(dcount == sizeof(d) - 1){
 
-    } else {
-        char message[] = "";
-        char ptr [50];
-        int len = (strlen(d)+1) + (strlen(message)+1);
-
-        int size = 1;
-   
-        // Opening file for reading and writing
-        fwrite(d, len, 1, fp);
-        
-        fwrite(current, strlen(current), 1, fp);
+    //if counts dont match the size of the expected name then an entry is written to the missing files log
+    if(dcount != sizeof(d) - 1){
+        writeToMissingUploads(d, time_str, fp);
     }
 
     for(int x=0; x<sizeof(m); x++){
@@ -65,10 +68,9 @@ int check_file_uploads(time_t current) {
             mcount++;
         } 
     };
-    if(mcount == sizeof(m) - 1){
-        results[1] = 1;
-    } else {
-        results[1] = 0;
+
+    if(mcount != sizeof(m) - 1){
+        writeToMissingUploads(m, time_str, fp);
     }
 
     for(int x=0; x<sizeof(s); x++){
@@ -76,26 +78,34 @@ int check_file_uploads(time_t current) {
             scount++;
         }
     };
-    if(scount == sizeof(s) - 1){
-        results[2] = 1;
-    } else {
-        results[2] = 0;
+    if(scount != sizeof(s) - 1){
+        writeToMissingUploads(s, time_str, fp);
     }
-
-
     for(int x=0; x<sizeof(w); x++){
         if(path4[x]== w[x]){
             wcount++;
         }
     };
-    if(wcount == sizeof(w) - 1){
-        results[3] = 1;
-    } else {
-        results[3] = 0;
+    if(wcount != sizeof(w) - 1){
+        writeToMissingUploads(w, time_str, fp);
     }
     
-    //returns array of results
-    return results;
+    //close file
+    fclose(fp);
+
+    return 0;
 }
 
+void writeToMissingUploads(char department[MAXLENGTH], char* time, FILE * fp){
+    char message[] = " department did not submit their report on ";
+    char ptr [50];
+
+    //size of each element for writing
+    int size = 1;
+
+    fwrite(department, strlen(department), size, fp);
+    fwrite(message, strlen(message), size, fp);
+    fwrite(time, strlen(time), size, fp);        
+    fwrite("\n", strlen("\n"), 1, fp);
+}
       
