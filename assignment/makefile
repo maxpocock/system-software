@@ -26,6 +26,9 @@ lock_directories.o : lock_directories.c
 messageQueueServer.o : messageQueueServer.c
 	$(CC) -c messageQueueServer.c
 
+client:
+	$(CC) -o client client.c
+
 clean:
 	rm daemon $(objects)
 
