@@ -132,6 +132,7 @@ int main()
 			update_timer(&backup_time);
 		}	
 
+      //starts message queue server that is responsible for documenting changes to the upload directory
       messageQueueServer();
 	}	
    }

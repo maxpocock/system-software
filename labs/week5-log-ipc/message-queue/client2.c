@@ -1,28 +1,37 @@
 #include <stdio.h>
-#include <string.h>
-#include <mqueue.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+#include <mqueue.h>
 
-int main(int argc, char **argv)
-{
+#define MSG_QUEUE_NAME "/my_msg_queue"
+#define MSG_SIZE 1024
+
+int main() {
     mqd_t mq;
-    char buffer[1024];
+    char msg_buffer[MSG_SIZE];
+    int msg_priority;
+    ssize_t bytes_sent;
 
-    /* open the message queue */
+    // Open the message queue
     mq = mq_open("/dt228_queue", O_WRONLY);
+    if (mq == (mqd_t) -1) {
+        perror("mq_open");
+        exit(1);
+    }
 
-    printf("Send message to server (enter 'exit' to terminate):\n");
+    // Read messages from standard input and send them to the message queue
+    while (fgets(msg_buffer, MSG_SIZE, stdin)) {
+        bytes_sent = mq_send(mq, msg_buffer, sizeof(msg_buffer), 0);
+        if (bytes_sent == -1) {
+            perror("mq_send");
+            continue;
+        }
+    }
 
-    do {
-        printf(">> ");
-        fflush(stdout);
+    // Close the message queue
+    mq_close(mq);
 
-        memset(buffer, 0, 1024);
-        fgets(buffer, 1024, stdin);
-        mq_send(mq, buffer, 1024, 0);
-
-    } while (strncmp(buffer, "exit", strlen("exit")));
-
-    mq_close(mq); 
     return 0;
 }

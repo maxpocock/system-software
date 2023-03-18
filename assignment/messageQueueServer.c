@@ -1,3 +1,7 @@
+/*
+    This program creates a server that reads from a message queue and outputs to a log file
+*/
+
 #include <stdlib.h>
 #include <string.h>
 #include <mqueue.h>
@@ -11,7 +15,7 @@
 
 int messageQueueServer(){
 
-time_t now;
+    time_t now;
     time(&now); 
     char * time_str = ctime(&now);
     time_str[strlen(time_str)-1] = '\0';
@@ -51,6 +55,7 @@ time_t now;
             fwrite("\n", strlen("\n"), 1, fp);
             fprintf(fp, "%s", buffer);
             fwrite("*******************\n", 20, 1, fp);
+            fflush(fp);
         }
     } while (!terminate);
 

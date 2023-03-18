@@ -1,3 +1,7 @@
+/*
+    This client is responsible for documenting changes to the upload directory
+*/
+
 #include <stdio.h>
 #include <string.h>
 #include <mqueue.h>
@@ -13,15 +17,14 @@ int main(int argc, char **argv)
 
     printf("Enter file name, create or modify and username:\n");
 
-    do {
-        printf(">> ");
-        fflush(stdout);
+    
+    printf(">> ");
+    fflush(stdout);
 
-        memset(buffer, 0, 1024);
-        fgets(buffer, 1024, stdin);
-        mq_send(mq, buffer, 1024, 0);
-        printf("Thank you, you can leave by typing exit\n ");
-    } while (strncmp(buffer, "exit", strlen("exit")));
+    memset(buffer, 0, 1024);
+    fgets(buffer, 1024, stdin);
+    mq_send(mq, buffer, 1024, 0);
+    printf("Thank you, this program will close now\n ");
 
     mq_close(mq); 
     return 0;
