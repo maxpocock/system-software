@@ -5,6 +5,7 @@
 #include <sys/wait.h>
 #include <sys/stat.h>
 #include <syslog.h>
+#include <stdio.h>
 
 void unlock_directories() {
     pid_t pid = fork();
