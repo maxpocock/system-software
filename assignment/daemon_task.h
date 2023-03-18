@@ -3,6 +3,8 @@
 
 #include <time.h>
 
+void messageQueueServer(void);
+
 void collect_reports(void);
 
 void backup_dashboard(void);

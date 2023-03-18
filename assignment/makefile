@@ -1,5 +1,5 @@
 CC=gcc
-objects = daemon.o backup_dashboard.o check_file_uploads.o collect_reports.o generate_reports.o lock_directories.o sig_handler.o unlock_directories.o update_timer.o
+objects = daemon.o backup_dashboard.o check_file_uploads.o collect_reports.o generate_reports.o lock_directories.o sig_handler.o unlock_directories.o update_timer.o messageQueueServer.o
 headers = daemon_task.h
 
 daemon : $(objects)
@@ -22,6 +22,9 @@ generate_reports.o : generate_reports.c
 
 lock_directories.o : lock_directories.c
 	$(CC) -c lock_directories.c
+
+messageQueueServer.o : messageQueueServer.c
+	$(CC) -c messageQueueServer.c
 
 clean:
 	rm daemon $(objects)

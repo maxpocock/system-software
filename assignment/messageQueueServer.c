@@ -9,9 +9,15 @@
 #include <sys/types.h>
 #include <time.h>
 
-int main()
-{
-    FILE * fp;
+int messageQueueServer(){
+
+time_t now;
+    time(&now); 
+    char * time_str = ctime(&now);
+    time_str[strlen(time_str)-1] = '\0';
+
+    FILE *fp;
+
     mqd_t mq;
     struct mq_attr queue_attributes;
     char buffer[1024 + 1];
@@ -23,11 +29,13 @@ int main()
     queue_attributes.mq_msgsize = 1024;
     queue_attributes.mq_curmsgs = 0;
 
+
     /* create queue */
-    mq = mq_open("/dt228_queue", O_CREAT | O_RDONLY, 0644, &queue_attributes);
- 
-    fp = fopen("/workspaces/system-software/assignment/logs/changes_log.txt", "a+");
+
     do {
+        mq = mq_open("/report_message_queue", O_CREAT | O_RDONLY, 0644, &queue_attributes);
+        fp = fopen("/workspaces/system-software/assignment/logs/changes_log.txt", "a+");
+
         ssize_t bytes_read;
 
         /* receive message */
@@ -35,17 +43,21 @@ int main()
 
         buffer[bytes_read] = '\0';
         if (! strncmp(buffer, "exit", strlen("exit")))
-        { terminate = 1; }
+            { terminate = 1; }
         else
-        { 
+        {   
+            printf("recieved %s \n", buffer);
+            fwrite(time_str, strlen(time_str), 1, fp);
+            fwrite("\n", strlen("\n"), 1, fp);
             fprintf(fp, "%s", buffer);
-            printf("Received: %s\n", buffer); 
-            }
-    } while (1 != 0);
+            fwrite("*******************\n", 20, 1, fp);
+        }
+    } while (!terminate);
 
     mq_close(mq);
-    mq_unlink("/dt228_queue");
-    return 0;
+    mq_unlink("/report_message_queue");
+    fclose(fp);
 
+    return 0;
 }
 

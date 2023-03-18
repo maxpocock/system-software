@@ -9,9 +9,9 @@ int main(int argc, char **argv)
     char buffer[1024];
 
     /* open the message queue */
-    mq = mq_open("/report_message_queue", O_WRONLY);
+    mq = mq_open("/dt228_queue", O_WRONLY);
 
-    printf("Enter file name, create or modify and username:\n");
+    printf("Send message to server (enter 'exit' to terminate):\n");
 
     do {
         printf(">> ");
@@ -20,7 +20,7 @@ int main(int argc, char **argv)
         memset(buffer, 0, 1024);
         fgets(buffer, 1024, stdin);
         mq_send(mq, buffer, 1024, 0);
-        printf("Thank you, you can leave by typing exit\n ");
+
     } while (strncmp(buffer, "exit", strlen("exit")));
 
     mq_close(mq); 

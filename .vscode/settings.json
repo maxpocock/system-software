@@ -1,5 +1,6 @@
 {
     "files.associations": {
-        "syslog.h": "c"
+        "syslog.h": "c",
+        "stat.h": "c"
     }
 }
