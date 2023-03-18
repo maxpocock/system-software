@@ -10,22 +10,12 @@
 
 
 void generate_reports(void) {
-    printf("Generate report function could go here.. you do not have to follow this design but an option if you are stuck");
-    
-    struct stat file_stat;
-    stat("distribution.xml", &file_stat);
+   chdir("/");
+   chdir("/workspaces/system-software/assignment/upload");
+   system("touch distribution.xml");
+   system("touch manufacturing.xml");
+   system("touch sales.xml");
+   system("touch warehouse.xml");
 
-    printf("\n st_mtime = %li", file_stat.st_mtime);
-    
-    FILE *fp;
-    int status;
-    char path[1024];
-
-    fp = popen("ls report", "r");
-
-   while (fgets(path, 1024, fp) != NULL)
-      printf("%s", path);
-
-   status = pclose(fp);
-
+   return 0;
 }

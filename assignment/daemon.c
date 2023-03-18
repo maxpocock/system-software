@@ -24,6 +24,9 @@
 #include <time.h>
 #include "daemon_task.h"
 #include <signal.h>
+#include <mqueue.h>
+#include <string.h>
+#include <fcntl.h>
 
 int main()
 {
@@ -34,6 +37,18 @@ int main()
     backup_time.tm_hour = 1; 
     backup_time.tm_min = 0; 
     backup_time.tm_sec = 0;
+    char * time_str = ctime(&now);
+
+   //message queue to record upload and modification details
+   FILE *fp;
+   mqd_t mq;
+   struct mq_attr queue_attributes;
+   char buffer[1024 + 1];
+   int terminate = 0;
+   queue_attributes.mq_flags = 0;
+   queue_attributes.mq_maxmsg = 10;
+   queue_attributes.mq_msgsize = 1024;
+   queue_attributes.mq_curmsgs = 0;
 
     // Implementation for Singleton Pattern if desired (Only one instance running)
 
@@ -91,6 +106,12 @@ int main()
 	  check_uploads_time.tm_hour = 23; 
 	  check_uploads_time.tm_min = 30; 
 	  check_uploads_time.tm_sec = 0;
+
+      //creates message queue
+      mq = mq_open("/report_directory_changes_queue", O_CREAT | O_RDONLY, 0644, &queue_attributes);
+      fp = fopen("/workspaces/system-software/assignment/logs/changes_log.txt", "a+");
+
+      ssize_t bytes_read;
 	
   	  while(1) {
 	  	sleep(1);
@@ -117,18 +138,42 @@ int main()
 		double seconds_to_transfer = difftime(now, mktime(&backup_time));
 		//syslog(LOG_INFO, "%.f seconds until backup", seconds_to_files_check);
 		if(seconds_to_transfer == 0) {
+
+         //closes message queue
+         mq_close(mq);
+         mq_unlink("/report_directory_changes_queue");
+
 			lock_directories();
 			collect_reports();	  
 			backup_dashboard();
 			sleep(30);
 			unlock_directories();
 			generate_reports();
+
+         //open message queue again
+         mq = mq_open("/report_directory_changes_queue", O_CREAT | O_RDONLY, 0644, &queue_attributes);
+
 			//after actions are finished, start counting to next day
 			update_timer(&backup_time);
 		}	
-	  }
+
+      //message queue implementation
+      //receive message
+      time_str[strlen(time_str)-1] = '\0';
+      bytes_read = mq_receive(mq, buffer, 1024, NULL);
+      buffer[bytes_read] = '\0';
+      fwrite(buffer, strlen(buffer), 1, fp);
+      fwrite(time_str, strlen(time_str), 1, fp);
+      fwrite("\n", strlen("\n"), 1, fp);
 	}	
+   }
+
+    //close message queue
+    mq_close(mq);
+    mq_unlink("/report_directory_changes_queue");
+
 	closelog();
        return 0;
     }
+
 }
