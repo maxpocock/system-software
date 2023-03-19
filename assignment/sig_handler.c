@@ -8,6 +8,7 @@ void sig_handler(int sigNum)
 {
 	if (sigNum == SIGINT) {
 		syslog(LOG_INFO, "RECEIVED SIGNAL INTERRUPT, INITIATING BACKUP AND TRANSFER");
+		check_file_uploads();
 		lock_directories();
 		collect_reports();
 		backup_dashboard();
