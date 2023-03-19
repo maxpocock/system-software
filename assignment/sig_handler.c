@@ -12,7 +12,9 @@ void sig_handler(int sigNum)
 		collect_reports();
 		backup_dashboard();
 		sleep(30);
-		unlock_directories();	
+		unlock_directories();
+		generate_reports();
+	
 	}
 
 }
