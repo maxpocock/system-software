@@ -40,15 +40,14 @@ int main(void)
         return -1;
     }
     printf("Done with binding\n");
+    // Listen for clients:
+    if(listen(socket_desc, 1) < 0){
+        printf("Error while listening\n");
+        return -1;
+    }
+    printf("\nListening for incoming connections.....\n");
     
     while(1){
-        // Listen for clients:
-        if(listen(socket_desc, 1) < 0){
-            printf("Error while listening\n");
-            return -1;
-        }
-        printf("\nListening for incoming connections.....\n");
-        
         // Accept an incoming connection:
         client_size = sizeof(client_addr);
         client_sock = accept(socket_desc, (struct sockaddr*)&client_addr, &client_size);
@@ -83,10 +82,10 @@ int main(void)
 //messages go through once client has been closed?
 void *addThread(void *client_sock){
     int read_size;
-    char client_message[50], server_message[50];
+    char client_message[100], server_message[100];
     while((read_size = recv(client_sock , client_message , 2000 , 0)) > 0 ){
         // Receive client's message:
-        if (recv(client_sock, client_message, sizeof(client_message), 0) < 0){
+        if (read_size < 0){
             printf("Couldn't receive\n");
             return -1;
         }

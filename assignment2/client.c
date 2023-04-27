@@ -34,25 +34,33 @@ int main(void)
         return -1;
     }
     printf("Connected with server successfully\n");
+    int x =0;
     
-    // Get input from the user:
-    printf("Enter message: ");
-    gets(client_message);
-    
-    // Send the message to server:
-    if(send(socket_desc, client_message, strlen(client_message), 0) < 0){
-        printf("Unable to send message\n");
-        return -1;
+    while(x==0){
+        // Get input from the user:
+        printf("Enter message: ");
+        gets(client_message);
+        
+        // Send the message to server:
+        if(send(socket_desc, client_message, strlen(client_message), 0) < 0){
+            printf("Unable to send message\n");
+            return -1;
+        }
+        
+        // Receive the server's response:
+        if(recv(socket_desc, server_message, sizeof(server_message), 0) < 0){
+            printf("Error while receiving server's msg\n");
+            return -1;
+        }
+        
+        printf("Server's response: %s\n", server_message);
+        
+        x = strstr(client_message, "exit");
+        // Clean buffers:
+        memset(server_message,'\0',sizeof(server_message));
+        memset(client_message,'\0',sizeof(client_message));
     }
-    
-    // Receive the server's response:
-    if(recv(socket_desc, server_message, sizeof(server_message), 0) < 0){
-        printf("Error while receiving server's msg\n");
-        return -1;
-    }
-    
-    printf("Server's response: %s\n",server_message);
-    
+    printf("Thank You, the program will now exit.\n");
     // Close the socket:
     close(socket_desc);
     
