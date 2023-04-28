@@ -82,7 +82,10 @@ int main(void)
 //messages go through once client has been closed?
 void *addThread(void *client_sock){
     int read_size;
-    char client_message[100], server_message[100];
+    char client_message[100], server_message[100], file_name[30], buff[5000];
+    int groupID[6], userID[6];
+    size_t file_size;
+    FILE *fp;
     while((read_size = recv(client_sock , client_message , 2000 , 0)) > 0 ){
         // Receive client's message:
         if (read_size < 0){
@@ -98,7 +101,33 @@ void *addThread(void *client_sock){
             printf("Can't send\n");
             return -1;
         }
-    }
 
+        if(strstr(client_message, "transfer")){
+            memset(client_message,'\0',sizeof(client_message));
+
+            strcpy(server_message, "Please enter a name for the file: \n");
+
+            if (send(client_sock, server_message, strlen(server_message), 0) < 0){
+                printf("Can't send\n");
+                return -1;
+            }
+            recv(client_sock , file_name , strlen(file_name) , 0);
+
+            printf("%s", file_name);
+            fp = fopen("new.txt", "w");
+            if(fp==NULL){
+                printf("Error opening file");
+                return -1;
+            }
+
+            while ((file_size = recv(client_sock, buff, sizeof(buff), 0)) > 0) {
+                if (fwrite(buff, 1, file_size, fp) != file_size) {
+                    printf("Error writing to file.");
+                    return -1;
+                }
+            }
+        }
+    }
     close(client_sock);
+
 }
