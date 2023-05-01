@@ -57,9 +57,16 @@ int main(void)
         
         printf("Server's response: %s \n", server_message);
 
+        client_message[strcspn(client_message, "\n")] = 0;
+
         //load file
         if(strstr(client_message, "transfer")){
             transferFiles(socket_desc);
+        }
+
+        if (strcmp(client_message, "exit") == 0) {
+            printf("Exiting...\n");
+            break;
         }
 
         // Clean buffers:
@@ -73,28 +80,47 @@ int main(void)
     return 0;
 }
 
-int transferFiles(int socket_desc){
+int transferFiles(int socket_desc) {
     char fileName[30];
-    char buff[5000];
+    char buff[1024];
     FILE *fp;
     printf("Please enter the name of the file you wish to transfer, including the file extension:\n");
     fgets(fileName, sizeof(fileName), stdin);
     fileName[strcspn(fileName, "\n")] = '\0';  // remove trailing newline
     
-    fp = fopen(fileName,"r");
-    if(fp==NULL){
-        printf("Error while trying to open file, possible wrong name.");
+    fp = fopen(fileName, "rb");
+    if (fp == NULL) {
+        printf("Error while trying to open file, possible wrong name.\n");
         return -1;
     }
 
-    while(fgets(buff, 5000, fp) != NULL) {
-        if (send(socket_desc, buff, sizeof(buff), 0) == -1) {
-        perror("[-]Error in sending file.");
-        exit(1);
+        // Send file size to server:
+    if (send(socket_desc, &fileName, sizeof(fileName), 0) < 0) {
+        printf("Error sending file name.\n");
+        return -1;
+    }
+
+    // Get file size:
+    fseek(fp, 0, SEEK_END);
+    size_t file_size = ftell(fp);
+    fseek(fp, 0, SEEK_SET);
+
+    // Send file size to server:
+    if (send(socket_desc, &file_size, sizeof(file_size), 0) < 0) {
+        printf("Error sending file size.\n");
+        return -1;
+    }
+
+    // Send file data to server:
+    size_t bytes_read;
+    while ((bytes_read = fread(buff, 1, sizeof(buff), fp)) > 0) {
+        if (send(socket_desc, buff, bytes_read, 0) < 0) {
+            printf("Error sending file data.\n");
+            return -1;
         }
-        bzero(buff, 5000);
     }
 
     fclose(fp);
+
     return 0;
 }
