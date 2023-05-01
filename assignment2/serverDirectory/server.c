@@ -77,7 +77,7 @@ int main(void)
 
 void *addThread(void *client_sock){
     int read_size;
-    char client_message[100], server_message[100], file_name[30], buff[1024], cmd[100];
+    char client_message[100], server_message[100], file_name[30], buff[1024], cmd[100], directory[30];
     int groupID[6], userID[6];
     size_t file_size;
     int uid;
@@ -107,9 +107,16 @@ void *addThread(void *client_sock){
 
             //receive group id
             recv(client_sock, &gid, sizeof(gid), 0);
+            printf("%d", gid);
 
-
-            strcpy(server_message, "Please enter a name for the file: \n");
+            if (send(client_sock, server_message, strlen(server_message), 0) < 0){
+                printf("Can't send\n");
+                return -1;
+            }
+            memset(directory,'\0',sizeof(directory));
+            
+            // Receive directory name from client:
+            recv(client_sock, directory, sizeof(directory), 0);
 
             if (send(client_sock, server_message, strlen(server_message), 0) < 0){
                 printf("Can't send\n");
@@ -118,15 +125,15 @@ void *addThread(void *client_sock){
             memset(file_name,'\0',sizeof(file_name));
             
             // Receive file name from client:
-            recv(client_sock, file_name, sizeof(file_name), 0);
-            puts(file_name);
+            recv(client_sock, &file_name, sizeof(file_name), 0);
 
             // Receive file size from client:
             size_t file_size;
             recv(client_sock, &file_size, sizeof(file_size), 0);
 
             // Open file for writing:
-            FILE *fp = fopen(file_name, "wb");
+            sprintf(cmd, "%s/%s", directory, file_name);
+            FILE *fp = fopen(cmd, "wb");
             if (fp == NULL) {
                 printf("Error opening file.\n");
                 return -1;
@@ -151,9 +158,16 @@ void *addThread(void *client_sock){
                 }
                 total_bytes += bytes_received;
             }
-
             fclose(fp);
-
+            
+            memset(server_message,'\0',sizeof(server_message));
+            strcpy(server_message, "Successful");
+        
+            if (send(client_sock, server_message, strlen(server_message), 0) < 0){
+                printf("Can't send\n");
+                return NULL;
+            }
+            puts(server_message);
         }
     }
     close(client_sock);

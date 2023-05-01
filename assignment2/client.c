@@ -59,8 +59,6 @@ int main(void)
             return -1;
         }
         
-        printf("Server's response: %s \n", server_message);
-
         client_message[strcspn(client_message, "\n")] = 0;
 
         //load file
@@ -85,14 +83,11 @@ int main(void)
 }
 
 int transferFiles(int socket_desc) {
-    char fileName[30];
+    char fileName[30], directory[30], result[30], cmd[30];
     char buff[1024];
     FILE *fp;
     uid_t uid = getuid();
     gid_t gid = getgid();
-    printf("Please enter the name of the file you wish to transfer, including the file extension:\n");
-    fgets(fileName, sizeof(fileName), stdin);
-    fileName[strcspn(fileName, "\n")] = '\0';
 
     //sending user id to server
     if (send(socket_desc, &uid, sizeof(uid), 0) < 0) {
@@ -105,6 +100,19 @@ int transferFiles(int socket_desc) {
         printf("Error sending group id.\n");
         return -1;
     }
+    printf("Transfer file to Manufacturing or Distribution directory?: \n");
+    fgets(directory, sizeof(directory), stdin);
+    directory[strcspn(directory, "\n")] = '\0';
+
+    // Send desired directory to server:
+    if (send(socket_desc, &directory, sizeof(directory), 0) < 0) {
+        printf("Error sending directory\n");
+        return -1;
+    }
+
+    printf("Please enter the name of the file you wish to transfer, including the file extension:\n");
+    fgets(fileName, sizeof(fileName), stdin);
+    fileName[strcspn(fileName, "\n")] = '\0';
     
     //open file to be sent
     fp = fopen(fileName, "rb");
@@ -113,7 +121,6 @@ int transferFiles(int socket_desc) {
         return -1;
     }
 
-    puts(fileName);
     // Send file name to server:
     if (send(socket_desc, &fileName, sizeof(fileName), 0) < 0) {
         printf("Error sending file name.\n");
@@ -139,6 +146,21 @@ int transferFiles(int socket_desc) {
             return -1;
         }
     }
+
+    // Receive the server's response:
+    if(recv(socket_desc, &result, sizeof(result), 0) < 0){
+        printf("Error while receiving server's msg\n");
+        return -1;
+    }
+    
+    printf("File transfer was  %s \n", result);
+
+    //if successful then remove local copy
+    if (strstr(result, "Successful")){
+            sprintf(cmd, "rm %s", fileName);
+            system(cmd);    
+    }
+
 
     fclose(fp);
 
