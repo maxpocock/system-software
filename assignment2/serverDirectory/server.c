@@ -4,6 +4,9 @@
 #include <sys/socket.h>
 #include <arpa/inet.h>
 #include <pthread.h>
+#include <unistd.h>
+#include <stddef.h>
+#include <sys/types.h>
 
 void *addThread(void *client_sock);
 
@@ -74,9 +77,11 @@ int main(void)
 
 void *addThread(void *client_sock){
     int read_size;
-    char client_message[100], server_message[100], file_name[30], buff[1024];
+    char client_message[100], server_message[100], file_name[30], buff[1024], cmd[100];
     int groupID[6], userID[6];
     size_t file_size;
+    int uid;
+    int gid;
     FILE *fp;
     while((read_size = recv(client_sock , client_message , 2000 , 0)) > 0 ){
         // Receive client's message:
@@ -97,6 +102,13 @@ void *addThread(void *client_sock){
         if(strstr(client_message, "transfer")){
             memset(client_message,'\0',sizeof(client_message));
 
+            //receive user id
+            recv(client_sock, &uid, sizeof(uid), 0);
+
+            //receive group id
+            recv(client_sock, &gid, sizeof(gid), 0);
+
+
             strcpy(server_message, "Please enter a name for the file: \n");
 
             if (send(client_sock, server_message, strlen(server_message), 0) < 0){
@@ -104,8 +116,10 @@ void *addThread(void *client_sock){
                 return NULL;
             }
             memset(file_name,'\0',sizeof(file_name));
+            
             // Receive file name from client:
             recv(client_sock, file_name, sizeof(file_name), 0);
+            puts(file_name);
 
             // Receive file size from client:
             size_t file_size;
@@ -117,6 +131,10 @@ void *addThread(void *client_sock){
                 printf("Error opening file.\n");
                 return -1;
             }
+
+            //attributing file to the user 
+            sprintf(cmd, "chown %d %s", uid, file_name);
+            system(cmd);
 
             // Receive file data from client:
             char buffer[1024];

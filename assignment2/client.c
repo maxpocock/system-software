@@ -3,6 +3,10 @@
 #include <string.h>
 #include <sys/socket.h>
 #include <arpa/inet.h>
+#include <unistd.h>
+#include <stddef.h>
+#include <sys/types.h>
+
 
 int transferFiles(int socket_desc);
 
@@ -84,28 +88,44 @@ int transferFiles(int socket_desc) {
     char fileName[30];
     char buff[1024];
     FILE *fp;
+    uid_t uid = getuid();
+    gid_t gid = getgid();
     printf("Please enter the name of the file you wish to transfer, including the file extension:\n");
     fgets(fileName, sizeof(fileName), stdin);
-    fileName[strcspn(fileName, "\n")] = '\0';  // remove trailing newline
+    fileName[strcspn(fileName, "\n")] = '\0';
+
+    //sending user id to server
+    if (send(socket_desc, &uid, sizeof(uid), 0) < 0) {
+        printf("Error sending user id.\n");
+        return -1;
+    }
+
+    //sending group id to server
+    if (send(socket_desc, &gid, sizeof(gid), 0) < 0) {
+        printf("Error sending group id.\n");
+        return -1;
+    }
     
+    //open file to be sent
     fp = fopen(fileName, "rb");
     if (fp == NULL) {
         printf("Error while trying to open file, possible wrong name.\n");
         return -1;
     }
 
-        // Send file size to server:
+    puts(fileName);
+    // Send file name to server:
     if (send(socket_desc, &fileName, sizeof(fileName), 0) < 0) {
         printf("Error sending file name.\n");
         return -1;
     }
 
-    // Get file size:
+    // Get file size
     fseek(fp, 0, SEEK_END);
     size_t file_size = ftell(fp);
     fseek(fp, 0, SEEK_SET);
 
-    // Send file size to server:
+    // Send file size to server
     if (send(socket_desc, &file_size, sizeof(file_size), 0) < 0) {
         printf("Error sending file size.\n");
         return -1;
