@@ -83,7 +83,7 @@ int main(void)
 }
 
 int transferFiles(int socket_desc) {
-    char fileName[30], directory[30], result[30], cmd[30];
+    char fileName[30], directory[30], result[30] = {0}, cmd[30];
     char buff[1024];
     FILE *fp;
     uid_t uid = getuid();
@@ -100,7 +100,7 @@ int transferFiles(int socket_desc) {
         printf("Error sending group id.\n");
         return -1;
     }
-    printf("Transfer file to Manufacturing or Distribution directory?: \n");
+    printf("Transfer file to manufacturing or distribution directory?: \n");
     fgets(directory, sizeof(directory), stdin);
     directory[strcspn(directory, "\n")] = '\0';
 
@@ -110,7 +110,7 @@ int transferFiles(int socket_desc) {
         return -1;
     }
 
-    printf("Please enter the name of the file you wish to transfer, including the file extension:\n");
+    printf("Please enter the path of the file you wish to transfer, including the name and file extension:\n");
     fgets(fileName, sizeof(fileName), stdin);
     fileName[strcspn(fileName, "\n")] = '\0';
     
@@ -153,7 +153,7 @@ int transferFiles(int socket_desc) {
         return -1;
     }
     
-    printf("File transfer was  %s \n", result);
+    printf("File transfer was %s \n", result);
 
     //if successful then remove local copy
     if (strstr(result, "Successful")){

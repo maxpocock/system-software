@@ -77,7 +77,9 @@ int main(void)
 
 void *addThread(void *client_sock){
     int read_size;
-    char client_message[100], server_message[100], file_name[30], buff[1024], cmd[100], directory[30];
+    char client_message[100], file_name[30], buff[1024], cmd[100], directory[30];
+    char success[] = "Successful";
+    char transfer[] = "Transfer Started";
     int groupID[6], userID[6];
     size_t file_size;
     int uid;
@@ -91,10 +93,8 @@ void *addThread(void *client_sock){
         }
         printf("Msg from client: %s\n", client_message);
         
-        // Respond to client:
-        strcpy(server_message, "This is the server's message.");
-        
-        if (send(client_sock, server_message, strlen(server_message), 0) < 0){
+        // Respond to client:        
+        if (send(client_sock, transfer, strlen(transfer), 0) < 0){
             printf("Can't send\n");
             return NULL;
         }
@@ -109,19 +109,11 @@ void *addThread(void *client_sock){
             recv(client_sock, &gid, sizeof(gid), 0);
             printf("%d", gid);
 
-            if (send(client_sock, server_message, strlen(server_message), 0) < 0){
-                printf("Can't send\n");
-                return -1;
-            }
             memset(directory,'\0',sizeof(directory));
             
             // Receive directory name from client:
             recv(client_sock, directory, sizeof(directory), 0);
 
-            if (send(client_sock, server_message, strlen(server_message), 0) < 0){
-                printf("Can't send\n");
-                return NULL;
-            }
             memset(file_name,'\0',sizeof(file_name));
             
             // Receive file name from client:
@@ -140,7 +132,7 @@ void *addThread(void *client_sock){
             }
 
             //attributing file to the user 
-            sprintf(cmd, "chown %d %s", uid, file_name);
+            sprintf(cmd, "chown %d %s/%s", uid, directory, file_name);
             system(cmd);
 
             // Receive file data from client:
@@ -159,15 +151,12 @@ void *addThread(void *client_sock){
                 total_bytes += bytes_received;
             }
             fclose(fp);
-            
-            memset(server_message,'\0',sizeof(server_message));
-            strcpy(server_message, "Successful");
-        
-            if (send(client_sock, server_message, strlen(server_message), 0) < 0){
+                    
+            if (send(client_sock, success, strlen(success), 0) < 0){
                 printf("Can't send\n");
                 return NULL;
             }
-            puts(server_message);
+            puts(success);
         }
     }
     close(client_sock);
