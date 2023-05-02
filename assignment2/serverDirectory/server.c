@@ -8,6 +8,8 @@
 #include <stddef.h>
 #include <sys/types.h>
 
+pthread_mutex_t lock_x; 
+
 void *addThread(void *client_sock);
 
 int main(void)
@@ -15,6 +17,9 @@ int main(void)
     pthread_t threads[10];
     int socket_desc, client_sock, client_size, iret, counter = 0;
     struct sockaddr_in server_addr, client_addr;
+
+    //create lock
+    pthread_mutex_init(&lock_x, NULL);
     
     // Create socket:
     socket_desc = socket(AF_INET, SOCK_STREAM, 0);
@@ -100,6 +105,7 @@ void *addThread(void *client_sock){
         }
 
         if(strstr(client_message, "transfer")){
+
             memset(client_message,'\0',sizeof(client_message));
 
             //receive user id
@@ -119,6 +125,9 @@ void *addThread(void *client_sock){
             // Receive file name from client:
             recv(client_sock, &file_name, sizeof(file_name), 0);
 
+            // get access to lock 
+            pthread_mutex_lock(&lock_x);
+
             // Receive file size from client:
             size_t file_size;
             recv(client_sock, &file_size, sizeof(file_size), 0);
@@ -128,6 +137,8 @@ void *addThread(void *client_sock){
             FILE *fp = fopen(cmd, "wb");
             if (fp == NULL) {
                 printf("Error opening file.\n");
+                //release lock
+                pthread_mutex_unlock(&lock_x);
                 return -1;
             }
 
@@ -135,6 +146,8 @@ void *addThread(void *client_sock){
             int fileid = fileno(fp);
             if (fchown(fileid, uid, gid) == -1) {
                 printf("Error changing file owner\n");
+                //release lock
+                pthread_mutex_unlock(&lock_x);
                 return -1;
             }
 
@@ -145,10 +158,14 @@ void *addThread(void *client_sock){
                 size_t bytes_received = recv(client_sock, buffer, sizeof(buffer), 0);
                 if (bytes_received <= 0) {
                     printf("Error receiving file data.\n");
+                    //release lock
+                    pthread_mutex_unlock(&lock_x);
                     return NULL;
                 }
                 if (fwrite(buffer, 1, bytes_received, fp) != bytes_received) {
                     printf("Error writing to file.\n");
+                    //release lock
+                    pthread_mutex_unlock(&lock_x);
                     return NULL;
                 }
                 total_bytes += bytes_received;
@@ -160,6 +177,9 @@ void *addThread(void *client_sock){
                 return NULL;
             }
             puts(success);
+
+            //release lock
+            pthread_mutex_unlock(&lock_x);
         }
     }
     close(client_sock);

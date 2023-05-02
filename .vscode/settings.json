@@ -2,6 +2,7 @@
     "files.associations": {
         "syslog.h": "c",
         "stat.h": "c",
-        "functional": "c"
+        "functional": "c",
+        "types.h": "c"
     }
 }
