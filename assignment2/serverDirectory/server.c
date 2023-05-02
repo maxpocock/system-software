@@ -107,7 +107,7 @@ void *addThread(void *client_sock){
 
             //receive group id
             recv(client_sock, &gid, sizeof(gid), 0);
-            printf("%d", gid);
+            printf("Group ID: %d \n", gid);
 
             memset(directory,'\0',sizeof(directory));
             
@@ -132,8 +132,11 @@ void *addThread(void *client_sock){
             }
 
             //attributing file to the user 
-            sprintf(cmd, "chown %d %s/%s", uid, directory, file_name);
-            system(cmd);
+            int fileid = fileno(fp);
+            if (fchown(fileid, uid, gid) == -1) {
+                printf("Error changing file owner\n");
+                return -1;
+            }
 
             // Receive file data from client:
             char buffer[1024];
